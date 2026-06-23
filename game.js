@@ -438,3 +438,484 @@ let STATE = {
 
 console.log('Crimson Manor data loaded ✓');
 console.log('The murderer this game is:', MURDERER, '— keep this secret!');
+// ============================================================
+//  CRIMSON MANOR — Game Engine
+//  Step 4: All interactivity, navigation, logic
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  // ── Grab all DOM elements ──────────────────────────────────
+  const screenTitle    = document.getElementById('screen-title');
+  const screenGame     = document.getElementById('screen-game');
+  const screenEnding   = document.getElementById('screen-ending');
+
+  const btnStart       = document.getElementById('btn-start');
+  const btnNotebook    = document.getElementById('btn-notebook');
+  const btnCloseNB     = document.getElementById('btn-close-notebook');
+  const btnPlayAgain   = document.getElementById('btn-play-again');
+
+  const locationLabel  = document.getElementById('location-label');
+  const clueCount      = document.getElementById('clue-count');
+
+  const sceneImage     = document.getElementById('scene-image');
+  const sceneDesc      = document.getElementById('scene-description');
+  const actionButtons  = document.getElementById('action-buttons');
+
+  const charDisplay    = document.getElementById('character-display');
+  const dialogueText   = document.getElementById('dialogue-text');
+  const dialogueChoices= document.getElementById('dialogue-choices');
+
+  const notebookOverlay= document.getElementById('notebook-overlay');
+  const notebookContent= document.getElementById('notebook-content');
+  const nbTabs         = document.querySelectorAll('.nb-tab');
+
+  const puzzleOverlay  = document.getElementById('puzzle-overlay');
+  const puzzleTitle    = document.getElementById('puzzle-title');
+  const puzzleDesc     = document.getElementById('puzzle-description');
+  const puzzleContent  = document.getElementById('puzzle-content');
+  const puzzleFeedback = document.getElementById('puzzle-feedback');
+  const btnClosePuzzle = document.getElementById('btn-close-puzzle');
+
+  const endingEyebrow  = document.getElementById('ending-eyebrow');
+  const endingTitle    = document.getElementById('ending-title');
+  const endingBody     = document.getElementById('ending-body');
+
+  const roomBtns       = document.querySelectorAll('.room-btn');
+
+  // ── Start game ────────────────────────────────────────────
+  btnStart.addEventListener('click', () => {
+    screenTitle.classList.remove('active');
+    screenGame.classList.add('active');
+    enterRoom('library');
+  });
+
+  btnPlayAgain.addEventListener('click', () => {
+    location.reload();
+  });
+
+  // ── Room navigation ───────────────────────────────────────
+  roomBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      enterRoom(btn.dataset.room);
+    });
+  });
+
+  function enterRoom(roomId) {
+    STATE.currentRoom = roomId;
+    STATE.currentSuspect = null;
+    const room = ROOMS[roomId];
+
+    // Update top bar
+    locationLabel.textContent = '📍 ' + room.name;
+
+    // Update room nav highlight
+    roomBtns.forEach(b => b.classList.toggle('active', b.dataset.room === roomId));
+
+    // Update scene
+    sceneImage.textContent = room.emoji;
+    sceneDesc.textContent = room.description;
+
+    // Build action buttons — one per clue in the room
+    actionButtons.innerHTML = '';
+    room.clues.forEach(clueId => {
+      const clue = CLUES[clueId];
+      const found = STATE.foundClues.includes(clueId);
+      const btn = document.createElement('button');
+      btn.className = 'action-btn' + (found ? ' found' : '');
+      btn.textContent = found
+        ? clue.emoji + ' ' + clue.name + ' ✓'
+        : clue.emoji + ' Examine: ' + clue.name;
+      btn.addEventListener('click', () => examineClue(clueId));
+      actionButtons.appendChild(btn);
+    });
+
+    // Build suspect buttons
+    room.suspects_here.forEach(suspectId => {
+      const suspect = CHARACTERS[suspectId];
+      const btn = document.createElement('button');
+      btn.className = 'action-btn';
+      btn.textContent = suspect.emoji + ' Talk to ' + suspect.name;
+      btn.addEventListener('click', () => startInterrogation(suspectId));
+      actionButtons.appendChild(btn);
+    });
+
+    // Clear dialogue panel
+    showDialogue(
+      null,
+      room.is_crime_scene
+        ? '⚠️ This is where Lord Harwick was found. The body has been removed, but the scene is undisturbed.'
+        : 'Look around. Examine objects. Talk to anyone you find here.'
+    );
+    clearChoices();
+  }
+
+  // ── Clue examination ─────────────────────────────────────
+  function examineClue(clueId) {
+    const clue = CLUES[clueId];
+    const alreadyFound = STATE.foundClues.includes(clueId);
+
+    // If puzzle required and not yet found
+    if (clue.puzzle_required && !alreadyFound) {
+      showDialogue(null, clue.emoji + ' ' + clue.description);
+      setChoices([
+        {
+          text: '🔐 This is locked — attempt to solve the puzzle',
+          action: () => openPuzzle(clue.puzzle_required)
+        },
+        {
+          text: '← Look around the room',
+          action: () => enterRoom(STATE.currentRoom)
+        }
+      ]);
+      return;
+    }
+
+    // Mark as found
+    if (!alreadyFound) {
+      STATE.foundClues.push(clueId);
+      clueCount.textContent = STATE.foundClues.length;
+
+      // Break alibi if applicable
+      if (clue.breaks_alibi_of && !STATE.brokenAlibis.includes(clue.breaks_alibi_of)) {
+        STATE.brokenAlibis.push(clue.breaks_alibi_of);
+        STATE.notebookEntries.push(
+          '🔍 ' + CHARACTERS[clue.breaks_alibi_of].name + '\'s alibi has a hole in it.'
+        );
+      }
+
+      // Add to notebook
+      STATE.notebookEntries.push('Found: ' + clue.name + ' in ' + ROOMS[STATE.currentRoom].name);
+
+      // Check plot twist
+      checkPlotTwist();
+
+      // Refresh room to show found state
+      enterRoom(STATE.currentRoom);
+    }
+
+    // Show clue description
+    showDialogue(null, clue.emoji + ' ' + clue.name + '\n\n' + clue.description);
+    setChoices([
+      {
+        text: '📓 Add note to notebook',
+        action: () => {
+          showDialogue(null, '✓ Added to your notebook.');
+          clearChoices();
+        }
+      },
+      {
+        text: '← Keep investigating',
+        action: () => enterRoom(STATE.currentRoom)
+      }
+    ]);
+  }
+
+  // ── Interrogation ─────────────────────────────────────────
+  function startInterrogation(suspectId) {
+    STATE.currentSuspect = suspectId;
+    const c = CHARACTERS[suspectId];
+    const alibibroken = STATE.brokenAlibis.includes(suspectId);
+
+    // Show character
+    charDisplay.innerHTML = `
+      <div style="font-size:3rem">${c.emoji}</div>
+      <div class="char-name">${c.name}</div>
+      <div class="char-role">${c.role}</div>
+    `;
+
+    // Greeting line
+    const greetings = c.dialogue.greeting;
+    const line = greetings[Math.min(STATE.foundClues.length, greetings.length - 1)];
+    showDialogue(c.name, line);
+
+    // Build question choices
+    const choices = [
+      {
+        text: '🔪 "Tell me about Lord Harwick."',
+        action: () => askQuestion(suspectId, 'asked_about_victim')
+      },
+      {
+        text: '🕐 "Where were you last night?"',
+        action: () => askQuestion(suspectId, 'asked_about_alibi')
+      }
+    ];
+
+    if (alibibroken) {
+      choices.push({
+        text: '⚠️ "I found something that contradicts your story."',
+        action: () => confrontAlibi(suspectId)
+      });
+    }
+
+    choices.push({
+      text: '👁️ "I think YOU did it." [ACCUSE]',
+      action: () => accuseSuspect(suspectId)
+    });
+
+    choices.push({
+      text: '← Walk away',
+      action: () => enterRoom(STATE.currentRoom)
+    });
+
+    setChoices(choices);
+  }
+
+  function askQuestion(suspectId, topic) {
+    const c = CHARACTERS[suspectId];
+    const lines = c.dialogue[topic];
+    const line = lines[Math.min(STATE.foundClues.length, lines.length - 1)];
+    showDialogue(c.name, line);
+
+    setChoices([
+      {
+        text: '🔪 "Tell me about Lord Harwick."',
+        action: () => askQuestion(suspectId, 'asked_about_victim')
+      },
+      {
+        text: '🕐 "Where were you last night?"',
+        action: () => askQuestion(suspectId, 'asked_about_alibi')
+      },
+      {
+        text: '← End conversation',
+        action: () => enterRoom(STATE.currentRoom)
+      }
+    ]);
+  }
+
+  function confrontAlibi(suspectId) {
+    const c = CHARACTERS[suspectId];
+    const lines = c.dialogue.alibi_broken;
+    const line = lines[Math.min(STATE.foundClues.length - 1, lines.length - 1)];
+    showDialogue(c.name, '😰 ' + line);
+
+    STATE.notebookEntries.push(
+      c.name + ' was confronted about their alibi and became defensive.'
+    );
+
+    setChoices([
+      {
+        text: '👁️ "I think YOU did it." [ACCUSE]',
+        action: () => accuseSuspect(suspectId)
+      },
+      {
+        text: '← Not yet. Keep investigating.',
+        action: () => enterRoom(STATE.currentRoom)
+      }
+    ]);
+  }
+
+  function accuseSuspect(suspectId) {
+    STATE.gameOver = true;
+    const c = CHARACTERS[suspectId];
+    const correct = suspectId === MURDERER;
+    const line = c.dialogue.accused[correct ? 'correct' : 'wrong'];
+
+    showDialogue(c.name, (correct ? '😨 ' : '😠 ') + line);
+
+    setChoices([
+      {
+        text: correct ? '✅ See the ending' : '❌ See what happened',
+        action: () => showEnding(suspectId, correct)
+      }
+    ]);
+  }
+
+  // ── Plot twist ────────────────────────────────────────────
+  function checkPlotTwist() {
+    if (!STATE.plotTwistSeen && STATE.foundClues.length >= PLOT_TWIST.trigger_after_clues) {
+      STATE.plotTwistSeen = true;
+      setTimeout(() => {
+        showDialogue(null,
+          PLOT_TWIST.title + '\n\n' + PLOT_TWIST.description
+        );
+        STATE.notebookEntries.push('⚠️ TWIST: ' + PLOT_TWIST.title);
+        setChoices([
+          {
+            text: '😰 Stay calm and keep investigating',
+            action: () => enterRoom(STATE.currentRoom)
+          }
+        ]);
+      }, 600);
+    }
+  }
+
+  // ── Puzzles ───────────────────────────────────────────────
+  function openPuzzle(puzzleId) {
+    const p = PUZZLES[puzzleId];
+    puzzleTitle.textContent = p.title;
+    puzzleDesc.textContent = p.description + '\n\nHint: ' + p.hint;
+    puzzleFeedback.textContent = '';
+    puzzleFeedback.className = '';
+
+    puzzleContent.innerHTML = `
+      <input type="text" id="puzzle-input" placeholder="Enter your answer..."
+        maxlength="10" autocomplete="off" />
+      <button class="action-btn" id="btn-submit-puzzle"
+        style="margin-top:10px;width:100%;padding:10px;">
+        Submit Answer
+      </button>
+    `;
+
+    puzzleOverlay.classList.remove('hidden');
+
+    document.getElementById('btn-submit-puzzle').addEventListener('click', () => {
+      const val = document.getElementById('puzzle-input').value.trim().toUpperCase();
+      if (val === p.answer.toUpperCase()) {
+        puzzleFeedback.textContent = '✓ ' + p.success_message;
+        puzzleFeedback.className = 'correct';
+        // Unlock the reward clue
+        if (!STATE.foundClues.includes(p.reward_clue)) {
+          STATE.foundClues.push(p.reward_clue);
+          clueCount.textContent = STATE.foundClues.length;
+          const clue = CLUES[p.reward_clue];
+          if (clue.breaks_alibi_of) {
+            STATE.brokenAlibis.push(clue.breaks_alibi_of);
+          }
+          checkPlotTwist();
+        }
+        setTimeout(() => {
+          puzzleOverlay.classList.add('hidden');
+          enterRoom(STATE.currentRoom);
+        }, 2500);
+      } else {
+        puzzleFeedback.textContent = '✗ That\'s not right. Think again.';
+        puzzleFeedback.className = 'wrong';
+      }
+    });
+  }
+
+  btnClosePuzzle.addEventListener('click', () => {
+    puzzleOverlay.classList.add('hidden');
+  });
+
+  // ── Notebook ──────────────────────────────────────────────
+  btnNotebook.addEventListener('click', () => {
+    notebookOverlay.classList.remove('hidden');
+    renderNotebook('clues');
+  });
+
+  btnCloseNB.addEventListener('click', () => {
+    notebookOverlay.classList.add('hidden');
+  });
+
+  nbTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      nbTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderNotebook(tab.dataset.tab);
+    });
+  });
+
+  function renderNotebook(tab) {
+    if (tab === 'clues') {
+      if (STATE.foundClues.length === 0) {
+        notebookContent.innerHTML = '<p style="color:#6a5a5a">No clues found yet. Get investigating.</p>';
+        return;
+      }
+      notebookContent.innerHTML = STATE.foundClues.map(id => {
+        const c = CLUES[id];
+        return `<p class="clue-found">${c.emoji} <strong>${c.name}</strong><br>
+          <span style="color:#9a8a7a;font-size:12px">${c.description}</span></p><br>`;
+      }).join('');
+
+    } else if (tab === 'suspects') {
+      notebookContent.innerHTML = Object.entries(CHARACTERS).map(([id, c]) => {
+        const alibiStatus = STATE.brokenAlibis.includes(id)
+          ? '<span style="color:#9a4a4a">⚠️ Alibi questionable</span>'
+          : '<span style="color:#5a7a5a">Alibi unverified</span>';
+        return `<div class="suspect-entry">
+          <strong>${c.emoji} ${c.name}</strong> — ${c.role}<br>
+          <span style="font-size:12px;color:#9a8a7a">${c.alibi}</span><br>
+          ${alibiStatus}
+        </div>`;
+      }).join('');
+
+    } else if (tab === 'accuse') {
+      notebookContent.innerHTML = `
+        <p style="color:#9a4a4a;margin-bottom:1rem">
+          ⚠️ Accuse carefully. If you're wrong, the killer escapes.
+        </p>
+        <p style="color:#9a8a7a;font-size:13px;margin-bottom:1rem">
+          You have found <strong style="color:#c9a96e">${STATE.foundClues.length}</strong> clues
+          and broken <strong style="color:#c9a96e">${STATE.brokenAlibis.length}</strong> alibis.
+        </p>
+        ${Object.entries(CHARACTERS).map(([id, c]) => `
+          <div class="suspect-entry">
+            <strong>${c.emoji} ${c.name}</strong><br>
+            <button class="action-btn" style="margin-top:6px"
+              onclick="document.getElementById('notebook-overlay').classList.add('hidden');
+                       startInterrogationFromNotebook('${id}')">
+              Accuse ${c.name.split(' ')[1]}
+            </button>
+          </div>
+        `).join('')}
+      `;
+    }
+  }
+
+  // Global so notebook accuse button can call it
+  window.startInterrogationFromNotebook = function(suspectId) {
+    const room = Object.keys(ROOMS).find(r =>
+      ROOMS[r].suspects_here.includes(suspectId)
+    );
+    enterRoom(room || 'library');
+    setTimeout(() => accuseSuspect(suspectId), 100);
+  };
+
+  // ── Ending screen ─────────────────────────────────────────
+  function showEnding(suspectId, correct) {
+    screenGame.classList.remove('active');
+    screenEnding.classList.add('active');
+    const c = CHARACTERS[suspectId];
+    const real = CHARACTERS[MURDERER];
+
+    if (correct) {
+      endingEyebrow.textContent = '✓ Case Solved';
+      endingTitle.textContent = 'Justice served.';
+      endingBody.textContent =
+        `${c.name} confessed to the murder of Lord Harwick. ` +
+        `The authorities were called. The manor fell silent. ` +
+        `You solved the case with ${STATE.foundClues.length} clues and ` +
+        `${STATE.brokenAlibis.length} broken alibis. ` +
+        `Not bad for one night's work.`;
+    } else {
+      endingEyebrow.textContent = '✗ Wrong accusation';
+      endingTitle.textContent = 'The killer walks free.';
+      endingBody.textContent =
+        `${c.name} was innocent. While you pointed fingers, ` +
+        `the real killer — ${real.name} — slipped away into the night. ` +
+        `The case went cold. Lord Harwick's death was ruled an accident. ` +
+        `You found ${STATE.foundClues.length} clues. You needed more.`;
+    }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────
+  function showDialogue(speakerName, text) {
+    if (speakerName) {
+      charDisplay.innerHTML = `
+        <div style="font-size:3rem">${CHARACTERS[STATE.currentSuspect]?.emoji || ''}</div>
+        <div class="char-name">${speakerName}</div>
+      `;
+    } else {
+      charDisplay.innerHTML = '';
+    }
+    dialogueText.textContent = text;
+  }
+
+  function setChoices(choices) {
+    dialogueChoices.innerHTML = '';
+    choices.forEach(choice => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = choice.text;
+      btn.addEventListener('click', choice.action);
+      dialogueChoices.appendChild(btn);
+    });
+  }
+
+  function clearChoices() {
+    dialogueChoices.innerHTML = '';
+  }
+
+});
