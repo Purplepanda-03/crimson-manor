@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crimson Manor</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- TITLE SCREEN -->
+  <div id="screen-title" class="screen active">
+    <div class="title-content">
+      <p class="eyebrow">A murder mystery</p>
+      <h1>Crimson Manor</h1>
+      <p class="subtitle">Someone is dead. Everyone is lying. Only you can find the truth.</p>
+      <button id="btn-start">Begin Investigation</button>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="screen-game" class="screen">
+
+    <!-- Top bar -->
+    <div id="topbar">
+      <span id="location-label">📍 The Manor</span>
+      <span id="turn-label">Clues found: <strong id="clue-count">0</strong></span>
+      <button id="btn-notebook">📓 Notebook</button>
+    </div>
+
+    <!-- Main game area -->
+    <div id="game-area">
+
+      <!-- Left: Room + scene -->
+      <div id="scene-panel">
+        <div id="scene-image"></div>
+        <p id="scene-description">You stand in the entrance hall of Crimson Manor. Rain hammers the windows. Somewhere inside, a killer waits.</p>
+        <div id="action-buttons"></div>
+      </div>
+
+      <!-- Right: Dialogue / character panel -->
+      <div id="dialogue-panel">
+        <div id="character-display"></div>
+        <div id="dialogue-box">
+          <p id="dialogue-text">Choose a room to investigate, or find a suspect to interrogate.</p>
+        </div>
+        <div id="dialogue-choices"></div>
+      </div>
+
+    </div>
+
+    <!-- Bottom: Room navigation -->
+    <div id="room-nav">
+      <button class="room-btn" data-room="library">📚 Library</button>
+      <button class="room-btn" data-room="kitchen">🍽️ Kitchen</button>
+      <button class="room-btn" data-room="garden">🌿 Garden</button>
+      <button class="room-btn" data-room="study">🕯️ Study</button>
+      <button class="room-btn" data-room="cellar">🪣 Cellar</button>
+    </div>
+
+  </div>
+
+  <!-- NOTEBOOK OVERLAY -->
+  <div id="notebook-overlay" class="hidden">
+    <div id="notebook">
+      <div id="notebook-header">
+        <h2>📓 Your Notebook</h2>
+        <button id="btn-close-notebook">✕</button>
+      </div>
+      <div id="notebook-tabs">
+        <button class="nb-tab active" data-tab="clues">Clues</button>
+        <button class="nb-tab" data-tab="suspects">Suspects</button>
+        <button class="nb-tab" data-tab="accuse">Accuse</button>
+      </div>
+      <div id="notebook-content"></div>
+    </div>
+  </div>
+
+  <!-- PUZZLE OVERLAY -->
+  <div id="puzzle-overlay" class="hidden">
+    <div id="puzzle-box">
+      <h2 id="puzzle-title">Puzzle</h2>
+      <p id="puzzle-description"></p>
+      <div id="puzzle-content"></div>
+      <div id="puzzle-feedback"></div>
+      <button id="btn-close-puzzle">Give up for now</button>
+    </div>
+  </div>
+
+  <!-- ENDING SCREEN -->
+  <div id="screen-ending" class="screen">
+    <div class="ending-content">
+      <p id="ending-eyebrow"></p>
+      <h1 id="ending-title"></h1>
+      <p id="ending-body"></p>
+      <button id="btn-play-again">Play Again</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
