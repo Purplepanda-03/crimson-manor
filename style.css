@@ -1,0 +1,298 @@
+/* ── Reset & base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Georgia', serif;
+  background: #0d0a0e;
+  color: #e8dfc8;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Screens ── */
+.screen { display: none; width: 100vw; min-height: 100vh; }
+.screen.active { display: flex; }
+
+/* ── Title screen ── */
+#screen-title {
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, #1a0a0a 0%, #0d0a0e 70%);
+  text-align: center;
+}
+.title-content { max-width: 560px; padding: 2rem; }
+.eyebrow { font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: #8b4a4a; margin-bottom: 1rem; }
+#screen-title h1 { font-size: 4rem; color: #c9a96e; letter-spacing: 0.05em; line-height: 1.1; margin-bottom: 1rem; text-shadow: 0 0 60px rgba(201,169,110,0.3); }
+.subtitle { font-size: 1.1rem; color: #9a8a7a; line-height: 1.6; margin-bottom: 2.5rem; }
+
+/* ── Buttons ── */
+button { cursor: pointer; font-family: inherit; }
+#btn-start {
+  background: transparent;
+  border: 1px solid #c9a96e;
+  color: #c9a96e;
+  padding: 14px 40px;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: all 0.3s;
+}
+#btn-start:hover { background: #c9a96e; color: #0d0a0e; }
+
+/* ── Game screen ── */
+#screen-game { flex-direction: column; background: #0d0a0e; }
+
+#topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  border-bottom: 1px solid #2a2020;
+  background: #110d0e;
+  font-size: 13px;
+  color: #9a8a7a;
+}
+#btn-notebook {
+  background: transparent;
+  border: 1px solid #3a2a2a;
+  color: #c9a96e;
+  padding: 6px 14px;
+  font-size: 12px;
+}
+#btn-notebook:hover { background: #1a1010; }
+
+#game-area {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Scene panel ── */
+#scene-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  border-right: 1px solid #2a2020;
+  gap: 1rem;
+}
+
+#scene-image {
+  height: 200px;
+  background: #1a1010;
+  border: 1px solid #2a2020;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+}
+
+#scene-description {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #c8bca8;
+}
+
+#action-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.action-btn {
+  background: transparent;
+  border: 1px solid #3a2a2a;
+  color: #c9a96e;
+  padding: 8px 14px;
+  font-size: 12px;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.action-btn:hover { background: #1a1010; border-color: #c9a96e; }
+.action-btn.found { color: #5a7a5a; border-color: #2a3a2a; }
+
+/* ── Dialogue panel ── */
+#dialogue-panel {
+  display: flex;
+  flex-direction: column;
+  background: #110d0e;
+  padding: 1.25rem;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+#character-display {
+  font-size: 4rem;
+  text-align: center;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+#character-display .char-name { font-size: 14px; color: #c9a96e; letter-spacing: 0.05em; }
+#character-display .char-role { font-size: 11px; color: #6a5a5a; }
+
+#dialogue-box {
+  background: #0d0a0e;
+  border: 1px solid #2a2020;
+  border-radius: 4px;
+  padding: 1rem;
+  min-height: 100px;
+}
+#dialogue-text { font-size: 13px; line-height: 1.7; color: #c8bca8; font-style: italic; }
+
+#dialogue-choices { display: flex; flex-direction: column; gap: 6px; }
+.choice-btn {
+  background: transparent;
+  border: 1px solid #2a2020;
+  color: #9a8a7a;
+  padding: 8px 12px;
+  font-size: 12px;
+  text-align: left;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.choice-btn:hover { border-color: #c9a96e; color: #c9a96e; background: #1a1010; }
+
+/* ── Room nav ── */
+#room-nav {
+  display: flex;
+  gap: 0;
+  border-top: 1px solid #2a2020;
+  background: #0d0808;
+}
+.room-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-right: 1px solid #2a2020;
+  color: #6a5a5a;
+  padding: 12px 8px;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+.room-btn:last-child { border-right: none; }
+.room-btn:hover, .room-btn.active { background: #1a1010; color: #c9a96e; }
+
+/* ── Notebook overlay ── */
+#notebook-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+}
+#notebook-overlay.hidden { display: none; }
+#notebook {
+  background: #1a1208;
+  border: 1px solid #3a2a10;
+  width: 560px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+}
+#notebook-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #3a2a10;
+}
+#notebook-header h2 { font-size: 16px; color: #c9a96e; }
+#btn-close-notebook {
+  background: transparent; border: none;
+  color: #6a5a5a; font-size: 18px;
+}
+#btn-close-notebook:hover { color: #c9a96e; }
+#notebook-tabs {
+  display: flex;
+  border-bottom: 1px solid #3a2a10;
+}
+.nb-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-right: 1px solid #3a2a10;
+  color: #6a5a5a;
+  padding: 10px;
+  font-size: 13px;
+}
+.nb-tab:last-child { border-right: none; }
+.nb-tab.active { color: #c9a96e; background: #221808; }
+#notebook-content {
+  padding: 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #c8bca8;
+}
+
+/* ── Puzzle overlay ── */
+#puzzle-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+}
+#puzzle-overlay.hidden { display: none; }
+#puzzle-box {
+  background: #110d0e;
+  border: 1px solid #3a2020;
+  width: 480px;
+  padding: 2rem;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+#puzzle-title { font-size: 18px; color: #c9a96e; }
+#puzzle-description { font-size: 13px; color: #9a8a7a; line-height: 1.6; }
+#puzzle-content input {
+  background: #0d0a0e;
+  border: 1px solid #3a2020;
+  color: #e8dfc8;
+  padding: 10px;
+  font-size: 16px;
+  width: 100%;
+  font-family: monospace;
+  letter-spacing: 0.2em;
+  text-align: center;
+}
+#puzzle-feedback { font-size: 13px; min-height: 20px; }
+#puzzle-feedback.correct { color: #5a9a5a; }
+#puzzle-feedback.wrong { color: #9a4a4a; }
+#btn-close-puzzle {
+  background: transparent;
+  border: 1px solid #3a2020;
+  color: #6a5a5a;
+  padding: 8px;
+  font-size: 12px;
+}
+
+/* ── Ending screen ── */
+#screen-ending {
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, #0a1a0a 0%, #0d0a0e 70%);
+  text-align: center;
+}
+.ending-content { max-width: 560px; padding: 2rem; }
+#ending-eyebrow { font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: #5a9a5a; margin-bottom: 1rem; }
+#ending-title { font-size: 3rem; color: #c9a96e; margin-bottom: 1.5rem; }
+#ending-body { font-size: 1rem; color: #9a8a7a; line-height: 1.8; margin-bottom: 2.5rem; }
+#btn-play-again {
+  background: transparent;
+  border: 1px solid #c9a96e;
+  color: #c9a96e;
+  padding: 12px 32px;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+#btn-play-again:hover { background: #c9a96e; color: #0d0a0e; }
+
+/* ── Utility ── */
+.hidden { display: none !important; }
+.clue-found { color: #5a9a5a; }
+.suspect-entry { margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #2a1a10; }
+.suspect-entry:last-child { border-bottom: none; }
