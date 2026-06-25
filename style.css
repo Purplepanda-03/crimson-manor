@@ -1,298 +1,283 @@
-/* ── Reset & base ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Basic Reset */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* Thematic Colors and Fonts */
+:root {
+    --primary-dark: #1a1a1a; /* Very dark grey */
+    --secondary-dark: #2c1e2c; /* Deep plum/purple */
+    --accent-crimson: #a00000; /* Deep crimson red */
+    --accent-gold: #d4af37; /* Dark gold */
+    --text-light: #e0e0e0; /* Light grey text */
+    --text-muted: #aaaaaa; /* Muted grey text */
+    --border-color: #443344; /* Muted purple-ish border */
+    --highlight-color: #d03030; /* Brighter crimson for highlights */
+}
 
 body {
-  font-family: 'Georgia', serif;
-  background: #0d0a0e;
-  color: #e8dfc8;
-  min-height: 100vh;
-  overflow: hidden;
+    font-family: 'Playfair Display', serif; /* Primary thematic font */
+    background-color: var(--primary-dark);
+    color: var(--text-light);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    overflow: hidden; /* Prevent scrollbars if possible */
+}
+h1, h2, h3, h4 {
+    font-family: 'Cinzel Decorative', cursive; /* More decorative headings */
+    color: var(--accent-crimson);
+    text-shadow: 0 0 5px rgba(160,0,0,0.5);
+}
+.game-container {
+    display: flex;
+    gap: 30px;
+    max-width: 1200px;
+    width: 100%;
+    background-color: var(--secondary-dark);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    border: 3px solid var(--border-color);
+}
+.game-board {
+    flex: 2;
+    border-radius: 10px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 15px;
+    position: relative;
+    aspect-ratio: 3/2;
+    border: 4px solid var(--border-color);
+    background: url('https://placehold.co/600x400/333333/444444?text=Manor+Blueprint') no-repeat center center; /* Placeholder image for blueprint feel */
+    background-size: cover;
+    overflow: hidden; /* Ensure rooms don't overflow */
+}
+.room {
+    background-color: rgba(60, 40, 60, 0.8); /* Slightly transparent, darker */
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    padding: 10px;
+    border: 2px solid var(--border-color);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+.room:hover {
+    transform: translateY(-5px);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 5px 15px rgba(0,0,0,0.3);
+    background-color: rgba(70, 50, 70, 0.9);
+}
+.room.current-location {
+    border: 3px solid var(--accent-gold);
+    box-shadow: inset 0 0 15px rgba(212,175,55,0.7), 0 0 15px var(--accent-gold);
+    transform: scale(1.05);
+}
+.room h3 {
+    margin-bottom: 8px;
+    font-size: 1.1em;
+    color: var(--accent-gold); /* Gold for room titles */
+    text-shadow: 0 0 3px rgba(212,175,55,0.7);
+}
+.room p {
+    font-size: 0.85em;
+    color: var(--text-muted);
+}
+/* Specific room styling overrides */
+.entrance-hall { background-color: rgba(160, 0, 0, 0.7); } /* Crimson accent */
+.entrance-hall h3 { color: var(--text-light); text-shadow: none; }
+.entrance-hall p { color: var(--text-light); }
+
+/* Player/Info Panel */
+.player-panel {
+    flex: 1;
+    background-color: var(--secondary-dark);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    border: 3px solid var(--border-color);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+.player-info, .notebook, .actions {
+    background-color: rgba(40, 25, 40, 0.8);
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.4);
+}
+.player-info h3, .notebook h3, .actions h3 {
+    color: var(--accent-gold);
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 5px;
+    font-size: 1.2em;
+}
+.player-list {
+    list-style: none;
+    padding: 0;
+}
+.player-list li {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.player-marker {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--accent-crimson); /* Default player color */
+    box-shadow: 0 0 5px var(--accent-crimson);
+}
+.player-marker.player-2 { background-color: #0056b3; box-shadow: 0 0 5px #0056b3; } /* Blue */
+.player-marker.player-3 { background-color: #28a745; box-shadow: 0 0 5px #28a745; } /* Green */
+.player-marker.player-4 { background-color: #ffc107; box-shadow: 0 0 5px #ffc107; } /* Yellow */
+
+.player-info p {
+    font-size: 0.9em;
+    color: var(--text-muted);
+    margin-top: 10px;
+}
+.notebook-content {
+    font-family: 'IM Fell English SC', serif; /* Typewriter-like font for notebook */
+    font-size: 1.05em;
+    color: #c0a080; /* Parchment text color */
+    height: 180px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    background: url('https://placehold.co/300x200/e8d8b8/444?text=Parc...') no-repeat center center; /* Placeholder for parchment texture */
+    background-size: cover;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #8b7d6b;
+    text-shadow: 0 0 2px rgba(0,0,0,0.3);
+}
+.action-button {
+    font-family: 'Cinzel Decorative', cursive;
+    background: linear-gradient(to bottom, var(--accent-crimson), #600000);
+    color: var(--text-light);
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    width: 100%; /* Full width */
+}
+.action-button:hover {
+    transform: translateY(-3px);
+    background: linear-gradient(to bottom, #d03030, #800000);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+.action-button:disabled {
+    background: var(--border-color);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+.accusation-section {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+}
+.accusation-input {
+    flex-grow: 1;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    background-color: rgba(40, 25, 40, 0.9);
+    color: var(--text-light);
+    font-family: 'Playfair Display', serif;
+}
+.accusation-input::placeholder {
+    color: var(--text-muted);
+}
+.accusation-btn {
+    font-family: 'Cinzel Decorative', cursive;
+    background: linear-gradient(to bottom, #7080d0, #304080); /* Purple/Blue accent */
+    color: var(--text-light);
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+.accusation-btn:hover {
+    transform: translateY(-3px);
+    background: linear-gradient(to bottom, #8090e0, #405090);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+.accusation-btn:disabled {
+    background: var(--border-color);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
-/* ── Screens ── */
-.screen { display: none; width: 100vw; min-height: 100vh; }
-.screen.active { display: flex; }
-
-/* ── Title screen ── */
-#screen-title {
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(ellipse at center, #1a0a0a 0%, #0d0a0e 70%);
-  text-align: center;
+/* Toast container for messages */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--accent-gold);
+    color: var(--primary-dark);
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-family: 'Cinzel Decorative', cursive;
+    font-weight: bold;
+    box-shadow: 0 5px 15px rgba(212,175,55,0.5);
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.5s ease, transform 0.5s ease;
 }
-.title-content { max-width: 560px; padding: 2rem; }
-.eyebrow { font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: #8b4a4a; margin-bottom: 1rem; }
-#screen-title h1 { font-size: 4rem; color: #c9a96e; letter-spacing: 0.05em; line-height: 1.1; margin-bottom: 1rem; text-shadow: 0 0 60px rgba(201,169,110,0.3); }
-.subtitle { font-size: 1.1rem; color: #9a8a7a; line-height: 1.6; margin-bottom: 2.5rem; }
-
-/* ── Buttons ── */
-button { cursor: pointer; font-family: inherit; }
-#btn-start {
-  background: transparent;
-  border: 1px solid #c9a96e;
-  color: #c9a96e;
-  padding: 14px 40px;
-  font-size: 1rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  transition: all 0.3s;
-}
-#btn-start:hover { background: #c9a96e; color: #0d0a0e; }
-
-/* ── Game screen ── */
-#screen-game { flex-direction: column; background: #0d0a0e; }
-
-#topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 20px;
-  border-bottom: 1px solid #2a2020;
-  background: #110d0e;
-  font-size: 13px;
-  color: #9a8a7a;
-}
-#btn-notebook {
-  background: transparent;
-  border: 1px solid #3a2a2a;
-  color: #c9a96e;
-  padding: 6px 14px;
-  font-size: 12px;
-}
-#btn-notebook:hover { background: #1a1010; }
-
-#game-area {
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 0;
-  flex: 1;
-  overflow: hidden;
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10px);
 }
 
-/* ── Scene panel ── */
-#scene-panel {
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem;
-  border-right: 1px solid #2a2020;
-  gap: 1rem;
-}
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .game-container {
+        flex-direction: column;
+        padding: 15px;
+    }
+    .game-board {
+        aspect-ratio: unset;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, 1fr); /* Adjust rows if needed */
+        padding: 15px;
+    }
+    /* Adjust grid areas for smaller screens if necessary, based on new layout */
+    .entrance-hall { grid-area: 1 / 1 / 2 / 3; }
+    .library { grid-area: 2 / 1 / 3 / 2; }
+    .kitchen { grid-area: 2 / 2 / 3 / 3; }
+    .garden { grid-area: 3 / 1 / 4 / 2; }
+    .study { grid-area: 3 / 2 / 4 / 3; }
+    .cellar { grid-area: 4 / 1 / 5 / 3; } /* Example: make cellar span both columns */
 
-#scene-image {
-  height: 200px;
-  background: #1a1010;
-  border: 1px solid #2a2020;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 5rem;
+    .player-panel {
+        width: 100%;
+    }
+    .accusation-section {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .accusation-input, .accusation-btn {
+        width: 100%;
+        box-sizing: border-box;
+    }
 }
-
-#scene-description {
-  font-size: 14px;
-  line-height: 1.7;
-  color: #c8bca8;
-}
-
-#action-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
-.action-btn {
-  background: transparent;
-  border: 1px solid #3a2a2a;
-  color: #c9a96e;
-  padding: 8px 14px;
-  font-size: 12px;
-  border-radius: 2px;
-  transition: all 0.2s;
-}
-.action-btn:hover { background: #1a1010; border-color: #c9a96e; }
-.action-btn.found { color: #5a7a5a; border-color: #2a3a2a; }
-
-/* ── Dialogue panel ── */
-#dialogue-panel {
-  display: flex;
-  flex-direction: column;
-  background: #110d0e;
-  padding: 1.25rem;
-  gap: 1rem;
-  overflow-y: auto;
-}
-
-#character-display {
-  font-size: 4rem;
-  text-align: center;
-  min-height: 80px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-#character-display .char-name { font-size: 14px; color: #c9a96e; letter-spacing: 0.05em; }
-#character-display .char-role { font-size: 11px; color: #6a5a5a; }
-
-#dialogue-box {
-  background: #0d0a0e;
-  border: 1px solid #2a2020;
-  border-radius: 4px;
-  padding: 1rem;
-  min-height: 100px;
-}
-#dialogue-text { font-size: 13px; line-height: 1.7; color: #c8bca8; font-style: italic; }
-
-#dialogue-choices { display: flex; flex-direction: column; gap: 6px; }
-.choice-btn {
-  background: transparent;
-  border: 1px solid #2a2020;
-  color: #9a8a7a;
-  padding: 8px 12px;
-  font-size: 12px;
-  text-align: left;
-  border-radius: 2px;
-  transition: all 0.2s;
-}
-.choice-btn:hover { border-color: #c9a96e; color: #c9a96e; background: #1a1010; }
-
-/* ── Room nav ── */
-#room-nav {
-  display: flex;
-  gap: 0;
-  border-top: 1px solid #2a2020;
-  background: #0d0808;
-}
-.room-btn {
-  flex: 1;
-  background: transparent;
-  border: none;
-  border-right: 1px solid #2a2020;
-  color: #6a5a5a;
-  padding: 12px 8px;
-  font-size: 12px;
-  transition: all 0.2s;
-}
-.room-btn:last-child { border-right: none; }
-.room-btn:hover, .room-btn.active { background: #1a1010; color: #c9a96e; }
-
-/* ── Notebook overlay ── */
-#notebook-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.8);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 100;
-}
-#notebook-overlay.hidden { display: none; }
-#notebook {
-  background: #1a1208;
-  border: 1px solid #3a2a10;
-  width: 560px;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  border-radius: 4px;
-}
-#notebook-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid #3a2a10;
-}
-#notebook-header h2 { font-size: 16px; color: #c9a96e; }
-#btn-close-notebook {
-  background: transparent; border: none;
-  color: #6a5a5a; font-size: 18px;
-}
-#btn-close-notebook:hover { color: #c9a96e; }
-#notebook-tabs {
-  display: flex;
-  border-bottom: 1px solid #3a2a10;
-}
-.nb-tab {
-  flex: 1;
-  background: transparent;
-  border: none;
-  border-right: 1px solid #3a2a10;
-  color: #6a5a5a;
-  padding: 10px;
-  font-size: 13px;
-}
-.nb-tab:last-child { border-right: none; }
-.nb-tab.active { color: #c9a96e; background: #221808; }
-#notebook-content {
-  padding: 1.25rem;
-  overflow-y: auto;
-  flex: 1;
-  font-size: 13px;
-  line-height: 1.8;
-  color: #c8bca8;
-}
-
-/* ── Puzzle overlay ── */
-#puzzle-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.85);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 200;
-}
-#puzzle-overlay.hidden { display: none; }
-#puzzle-box {
-  background: #110d0e;
-  border: 1px solid #3a2020;
-  width: 480px;
-  padding: 2rem;
-  border-radius: 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-#puzzle-title { font-size: 18px; color: #c9a96e; }
-#puzzle-description { font-size: 13px; color: #9a8a7a; line-height: 1.6; }
-#puzzle-content input {
-  background: #0d0a0e;
-  border: 1px solid #3a2020;
-  color: #e8dfc8;
-  padding: 10px;
-  font-size: 16px;
-  width: 100%;
-  font-family: monospace;
-  letter-spacing: 0.2em;
-  text-align: center;
-}
-#puzzle-feedback { font-size: 13px; min-height: 20px; }
-#puzzle-feedback.correct { color: #5a9a5a; }
-#puzzle-feedback.wrong { color: #9a4a4a; }
-#btn-close-puzzle {
-  background: transparent;
-  border: 1px solid #3a2020;
-  color: #6a5a5a;
-  padding: 8px;
-  font-size: 12px;
-}
-
-/* ── Ending screen ── */
-#screen-ending {
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(ellipse at center, #0a1a0a 0%, #0d0a0e 70%);
-  text-align: center;
-}
-.ending-content { max-width: 560px; padding: 2rem; }
-#ending-eyebrow { font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: #5a9a5a; margin-bottom: 1rem; }
-#ending-title { font-size: 3rem; color: #c9a96e; margin-bottom: 1.5rem; }
-#ending-body { font-size: 1rem; color: #9a8a7a; line-height: 1.8; margin-bottom: 2.5rem; }
-#btn-play-again {
-  background: transparent;
-  border: 1px solid #c9a96e;
-  color: #c9a96e;
-  padding: 12px 32px;
-  font-size: 0.9rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-#btn-play-again:hover { background: #c9a96e; color: #0d0a0e; }
-
-/* ── Utility ── */
-.hidden { display: none !important; }
-.clue-found { color: #5a9a5a; }
-.suspect-entry { margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #2a1a10; }
-.suspect-entry:last-child { border-bottom: none; }
