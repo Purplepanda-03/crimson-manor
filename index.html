@@ -4,371 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crimson Manor - Online Board Game</title>
-    <style>
-        /* Basic Reset */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        /* Game Board Styling */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #222;
-            color: #eee;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .game-container {
-            display: flex;
-            gap: 30px;
-            max-width: 1200px;
-            width: 100%;
-        }
-        .game-board {
-            flex: 2;
-            background-color: #333;
-            border-radius: 10px;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            gap: 15px;
-            position: relative;
-            aspect-ratio: 3/2; /* Roughly square board */
-            border: 5px solid #555;
-        }
-        .room {
-            background-color: #444;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            padding: 10px;
-            border: 2px solid #666;
-        }
-        .room:hover {
-            background-color: #555;
-        }
-        .room h3 {
-            margin-bottom: 10px;
-            font-size: 1.2em;
-            color: #f0a0a0; /* Crimson accent */
-        }
-        .room p {
-            font-size: 0.9em;
-            color: #ccc;
-        }
-        /* Specific room placements (example) */
-        .entrance-hall { grid-area: 1 / 2 / 2 / 3; background-color: #f0a0a0; color: #222; }
-        .library { grid-area: 1 / 1 / 2 / 2; }
-        .kitchen { grid-area: 1 / 3 / 2 / 4; }
-        .garden { grid-area: 2 / 1 / 3 / 2; }
-        .study { grid-area: 2 / 2 / 3 / 3; }
-        .cellar { grid-area: 2 / 3 / 3 / 4; }
-
-        /* Player/Info Panel */
-        .player-panel {
-            flex: 1;
-            background-color: #333;
-            border-radius: 10px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            border: 5px solid #555;
-        }
-        .player-info, .notebook, .actions {
-            background-color: #444;
-            border-radius: 8px;
-            padding: 15px;
-        }
-        .player-info h3, .notebook h3, .actions h3 {
-            color: #f0a0a0;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #666;
-            padding-bottom: 5px;
-        }
-        .player-list li {
-            margin-bottom: 8px;
-        }
-        .notebook-content {
-            font-size: 0.9em;
-            color: #ccc;
-            height: 150px; /* Fixed height for notebook */
-            overflow-y: auto;
-            white-space: pre-wrap; /* Preserve formatting */
-        }
-        .action-button {
-            background-color: #f0a0a0;
-            color: #222;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-            margin-bottom: 10px;
-        }
-        .action-button:hover {
-            background-color: #ffc0c0;
-        }
-        .action-button:disabled {
-            background-color: #666;
-            cursor: not-allowed;
-        }
-        .accusation-input {
-            width: calc(100% - 70px);
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #666;
-            margin-right: 5px;
-            background-color: #555;
-            color: #eee;
-        }
-        .accusation-btn {
-            background-color: #a0a0f0; /* Different accent for accusation */
-            color: #222;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .accusation-btn:hover {
-            background-color: #c0c0ff;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .game-container {
-                flex-direction: column;
-            }
-            .game-board {
-                aspect-ratio: unset;
-                grid-template-columns: repeat(2, 1fr);
-                grid-template-rows: repeat(3, 1fr);
-            }
-            .entrance-hall { grid-area: 1 / 1 / 2 / 3; }
-            .library { grid-area: 2 / 1 / 3 / 2; }
-            .kitchen { grid-area: 2 / 2 / 3 / 3; }
-            .garden { grid-area: 3 / 1 / 4 / 2; }
-            .study { grid-area: 3 / 2 / 4 / 3; }
-            .cellar { grid-area: 4 / 1 / 5 / 3; } /* Adjusted placement */
-        }
-    </style>
+    <!-- Link to Google Fonts for thematic feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English+SC&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <!-- Link to your CSS file -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="game-container">
         <div class="game-board">
-            <div class="room entrance-hall">
-                <h3>Entrance Hall</h3>
-                <p>Start here</p>
+            <!-- Rooms are defined here with data-room attributes for JS interaction -->
+            <div class="room entrance-hall" data-room="Entrance Hall">
+                <h3>The Grand Entrance</h3>
+                <p>Where it all begins.</p>
             </div>
-            <div class="room library" data-room="library">
-                <h3>Library</h3>
-                <p>Find clues, meet suspects.</p>
+            <div class="room library" data-room="Library">
+                <h3>The Library</h3>
+                <p>Secrets hidden in dusty tomes.</p>
             </div>
-            <div class="room kitchen" data-room="kitchen">
-                <h3>Kitchen</h3>
-                <p>Discover secrets.</p>
+            <div class="room kitchen" data-room="Kitchen">
+                <h3>The Kitchen</h3>
+                <p>Hot gossip and cold meals.</p>
             </div>
-            <div class="room garden" data-room="garden">
-                <h3>Garden</h3>
-                <p>A place for secrets.</p>
+            <div class="room garden" data-room="Garden">
+                <h3>The Garden</h3>
+                <p>A place for clandestine meetings.</p>
             </div>
-            <div class="room study" data-room="study">
-                <h3>Study</h3>
-                <p>The heart of the manor.</p>
+            <div class="room study" data-room="Study">
+                <h3>The Study</h3>
+                <p>The mind of the manor.</p>
             </div>
-            <div class="room cellar" data-room="cellar">
-                <h3>Cellar</h3>
-                <p>Dark and mysterious.</p>
+            <div class="room cellar" data-room="Cellar">
+                <h3>The Cellar</h3>
+                <p>Dark corners and hidden truths.</p>
             </div>
-            <!-- Additional rooms can be added here -->
+            <!-- Add more rooms as needed -->
         </div>
 
         <div class="player-panel">
             <div class="player-info">
-                <h3>Players</h3>
+                <h3>Your Investigator</h3>
                 <ul class="player-list">
-                    <li>Player 1 (You)</li>
-                    <!-- Other players would be added here dynamically -->
+                    <li><span class="player-marker player-1"></span> Player 1 (You)</li>
+                    <!-- Other players would be added here dynamically in a multiplayer version -->
                 </ul>
-                <p>Your current location: Entrance Hall</p>
+                <p>Current Location: <span id="currentLocation">Entrance Hall</span></p>
             </div>
 
             <div class="notebook">
-                <h3>Your Notebook</h3>
+                <h3>Investigator's Log</h3>
                 <div class="notebook-content" id="notebookContent">
-                    Clues found: 0<br>
-                    Suspects met: None<br>
-                    Deductions: Start by investigating rooms.
+                    <!-- Content will be dynamically updated by game.js -->
                 </div>
             </div>
 
             <div class="actions">
-                <h3>Actions</h3>
+                <h3>Available Actions</h3>
                 <button class="action-button" id="investigateButton" disabled>Investigate Room</button>
                 <button class="action-button" id="interrogateButton" disabled>Interrogate Suspect</button>
                 <div class="accusation-section">
                     <input type="text" id="accusationInput" class="accusation-input" placeholder="Accuse a suspect...">
-                    <button class="accusation-btn" id="accusationButton" disabled>Accuse</button>
+                    <button class="accusation-btn" id="accusationButton" disabled>Accuse!</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // --- Game State ---
-        let currentGameLocation = "Entrance Hall";
-        let cluesFound = 0;
-        let notebookEntries = ["Clues found: 0", "Suspects met: None", "Deductions: Start by investigating rooms."];
-        let currentTurn = 0; // To manage turns if multiplayer is implemented
-        const rooms = ["Library", "Kitchen", "Garden", "Study", "Cellar"];
-        const suspects = ["Butler", "Maid", "Gardener", "Guest"]; // Example suspects
+    <!-- Toast container for temporary messages -->
+    <div id="toastContainer" class="toast"></div>
 
-        // --- DOM Elements ---
-        const locationDisplay = document.querySelector(".player-info p");
-        const notebookContentDisplay = document.getElementById("notebookContent");
-        const investigateButton = document.getElementById("investigateButton");
-        const interrogateButton = document.getElementById("interrogateButton");
-        const accusationInput = document.getElementById("accusationInput");
-        const accusationButton = document.getElementById("accusationButton");
-        const roomElements = document.querySelectorAll('.room[data-room]');
-
-        // --- Game Logic Functions ---
-
-        function updateNotebook() {
-            notebookContentDisplay.innerHTML = notebookEntries.join("<br>");
-        }
-
-        function addNotebookEntry(entry) {
-            notebookEntries.push(entry);
-            if (notebookEntries.length > 10) { // Keep notebook manageable
-                notebookEntries.shift();
-            }
-            updateNotebook();
-        }
-
-        function updatePlayerLocation(newLocation) {
-            currentGameLocation = newLocation;
-            locationDisplay.textContent = `Your current location: ${currentGameLocation}`;
-            updateActionButtons();
-        }
-
-        function updateActionButtons() {
-            // Enable investigate if not in Entrance Hall
-            investigateButton.disabled = (currentGameLocation === "Entrance Hall");
-
-            // Enable interrogate if a suspect is available in the room or specific locations
-            // For simplicity, enable if not in Entrance Hall
-            interrogateButton.disabled = (currentGameLocation === "Entrance Hall");
-
-            // Enable accusation if enough clues or after some turns
-            accusationButton.disabled = (cluesFound < 3 && notebookEntries.length < 8); // Example condition
-        }
-
-        function handleRoomClick(event) {
-            const clickedRoomName = event.currentTarget.dataset.room;
-            if (clickedRoomName) {
-                updatePlayerLocation(clickedRoomName);
-            }
-        }
-
-        function investigateRoom() {
-            if (currentGameLocation === "Entrance Hall") return;
-
-            addNotebookEntry(`Investigated the ${currentGameLocation}.`);
-            cluesFound++;
-            notebookEntries[0] = `Clues found: ${cluesFound}`; // Update clue count
-
-            // Simulate finding a clue or suspect
-            const randomEvent = Math.random();
-            if (randomEvent < 0.4) {
-                addNotebookEntry(`Found a cryptic note in the ${currentGameLocation}!`);
-            } else if (randomEvent < 0.6) {
-                const randomSuspect = suspects[Math.floor(Math.random() * suspects.length)];
-                addNotebookEntry(`Saw ${randomSuspect} lurking near the ${currentGameLocation}.`);
-            } else {
-                addNotebookEntry("Found nothing of significance.");
-            }
-
-            updateNotebook();
-            updateActionButtons();
-        }
-
-        function interrogateSuspect() {
-            if (currentGameLocation === "Entrance Hall") return;
-
-            // For now, assume a suspect is encountered
-            const randomSuspect = suspects[Math.floor(Math.random() * suspects.length)];
-            addNotebookEntry(`Interrogated ${randomSuspect} in the ${currentGameLocation}.`);
-
-            const suspectResponse = [
-                `${randomSuspect} claims they were in the Library all night.`,
-                `${randomSuspect} seemed nervous and avoided eye contact.`,
-                `${randomSuspect} mentioned seeing someone near the Garden.`,
-                `${randomSuspect} offered a weak alibi.`
-            ];
-            addNotebookEntry(suspectResponse[Math.floor(Math.random() * suspectResponse.length)]);
-
-            updateNotebook();
-            updateActionButtons();
-        }
-
-        function makeAccusation() {
-            const accusedSuspect = accusationInput.value.trim();
-            if (!accusedSuspect) {
-                alert("Please enter a suspect to accuse.");
-                return;
-            }
-
-            if (suspects.includes(accusedSuspect)) {
-                // This is where you'd check if the accusation is correct
-                // For now, simulate a win/loss based on clues
-                if (cluesFound >= 5) { // Example winning condition
-                    alert(`You correctly accused ${accusedSuspect}! You have solved the mystery of Crimson Manor!`);
-                    // Reset game or end
-                    resetGame();
-                } else {
-                    alert(`Your accusation against ${accusedSuspect} was incorrect. The killer remains at large.`);
-                    addNotebookEntry(`Failed accusation against ${accusedSuspect}.`);
-                    accusationInput.value = ""; // Clear input
-                    updateActionButtons();
-                }
-            } else {
-                alert(`"${accusedSuspect}" is not a known suspect in Crimson Manor.`);
-            }
-        }
-
-        function resetGame() {
-            currentGameLocation = "Entrance Hall";
-            cluesFound = 0;
-            notebookEntries = ["Clues found: 0", "Suspects met: None", "Deductions: Start by investigating rooms."];
-            updateNotebook();
-            updatePlayerLocation(currentGameLocation);
-            updateActionButtons();
-            accusationInput.value = "";
-        }
-
-        // --- Event Listeners ---
-        roomElements.forEach(room => {
-            room.addEventListener('click', handleRoomClick);
-        });
-        investigateButton.addEventListener('click', investigateRoom);
-        interrogateButton.addEventListener('click', interrogateSuspect);
-        accusationButton.addEventListener('click', makeAccusation);
-
-        // --- Initial Setup ---
-        updateNotebook();
-        updatePlayerLocation(currentGameLocation);
-        updateActionButtons();
-
-    </script>
+    <!-- Link to your JavaScript file -->
+    <script src="game.js" defer></script>
 </body>
 </html>
